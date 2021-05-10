@@ -1,2 +1,2 @@
 # terraform-module-template
-This is a Module to create a Repository into an Organizations via Terrafrom
+This is a Template to Terrafrom Modules
