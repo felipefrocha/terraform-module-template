@@ -22,6 +22,36 @@ help: ## This help.
 
 .DEFAULT_GOAL := help
 
+install:
+	@echo Install Terraform docs
+	@curl -Lo /tmp/terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v0.13.0/terraform-docs-v0.13.0-$$(uname)-amd64.tar.gz 
+	@tar -xzf /tmp/terraform-docs.tar.gz -C /tmp/
+	@chmod +x /tmp/terraform-docs
+	@sudo mv /tmp/terraform-docs /usr/local/bin/terraform-docs
+	@echo Installed terraform docs
+	
+setup: 
+	@cat>./.git/hooks/pre-commit<<EOF
+	#!/bin/bash
+	cd "$$PWD"
+	make docs
+	git add "./*README.md"
+	EOF
+	@chmod +x .git/hooks/pre-commit
+	@cat>./.git/hooks/post-commit<<EOF
+	#!/bin/bash
+	cd "$$PWD"
+	git add "./*README.md"
+	git commit -m "Updating Terraform Modules with terraform-docs"
+	EOF
+	@chmod +x ./.git/hooks/post-commit
+
+docs:
+	@find . -type d -exec bash -c 'terraform-docs md "{}" > "{}"/README.md;' \;
+	@find . -name "README.md" -size 1c -type f -delete
+	@printf "\n\033[35;1mUpdating the following READMEs with terraform-docs\033[0m\n\n"
+	@find . -name "README.md"faz
+
 example:
 	@mkdir -p examples/${CASE}
 	@touch main.tf variables.tf output.tf
